@@ -7,10 +7,10 @@ import { NavbarComponent } from '../app/components/navbar/navbar.component';
   standalone: true,
   imports: [NavbarComponent, RouterOutlet],
   template: `
-    <app-navbar></app-navbar>
-    <div class="container mt-3">
-      <router-outlet></router-outlet>
-    </div>
-  `
+    <app-navbar></app-navbar>
+    <div class="container mt-3">
+      <router-outlet></router-outlet>
+    </div>
+  `
 })
-export class AppComponent {}
+export class AppComponent { }

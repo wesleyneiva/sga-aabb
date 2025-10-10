@@ -33,7 +33,6 @@ export class TotemComponent {
   constructor(private senhaService: SenhaService) {}
 
   async gerar(tipo: 'normal' | 'preferencial') {
-    // Senha gerada com status 'aguardando'
     const novaSenha = await this.senhaService.gerarSenha(tipo);
     this.senhaAtual = novaSenha;
   }

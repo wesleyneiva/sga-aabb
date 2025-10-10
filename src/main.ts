@@ -1,11 +1,11 @@
 // src/main.ts
 import { bootstrapApplication } from '@angular/platform-browser';
-import { provideRouter, Routes, RouterOutlet } from '@angular/router';
+import { provideRouter, Router, Routes, RouterOutlet } from '@angular/router';
 import { provideFirebaseApp, initializeApp } from '@angular/fire/app';
 import { provideFirestore, getFirestore } from '@angular/fire/firestore';
 import { provideAuth, getAuth } from '@angular/fire/auth';
 import { CommonModule } from '@angular/common';
-import { Component } from '@angular/core';
+import { Component, inject, signal } from '@angular/core';
 
 // Componentes Standalone
 import { TotemComponent } from './app/pages/totem/totem.component';
@@ -23,29 +23,45 @@ const firebaseConfig = {
   appId: "1:119025909759:web:46bf1348664942807271ca"
 };
 
-// Layout principal que envolve Navbar e rota
+// Layout principal
 @Component({
   selector: 'app-root',
   standalone: true,
   imports: [CommonModule, RouterOutlet, NavbarComponent],
   template: `
-    <app-navbar></app-navbar>
-    <div class="container mt-4">
+    <!-- Mostra navbar somente se não estiver em /painel ou /totem -->
+    <ng-container *ngIf="mostrarNavbar()">
+      <app-navbar></app-navbar>
+    </ng-container>
+
+    <div class="container-fluid p-0">
       <router-outlet></router-outlet>
     </div>
   `
 })
-class AppComponent { }
+class AppComponent {
+  router = inject(Router);
+  mostrarNavbar = signal(true);
+
+  constructor() {
+    // Atualiza exibição da navbar conforme a rota
+    this.router.events.subscribe(() => {
+      const rota = this.router.url;
+      // Oculta navbar em rotas específicas
+      this.mostrarNavbar.set(!(rota.includes('/painel') || rota.includes('/totem') || rota.includes('/atendente')));
+    });
+  }
+}
 
 // Rotas do aplicativo
 const routes: Routes = [
-  { path: '', component: TotemComponent },
+  { path: '', redirectTo: 'totem', pathMatch: 'full' },
   { path: 'totem', component: TotemComponent },
   { path: 'atendente', component: AtendenteComponent },
   { path: 'painel', component: PainelComponent },
 ];
 
-// Bootstrap do aplicativo
+// Bootstrap do app
 bootstrapApplication(AppComponent, {
   providers: [
     provideRouter(routes),

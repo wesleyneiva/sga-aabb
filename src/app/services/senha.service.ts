@@ -1,80 +1,113 @@
 import { Injectable } from '@angular/core';
-import { Firestore, collection, addDoc, collectionData, doc, updateDoc, query, orderBy, where, limit, getDocs, DocumentReference } from '@angular/fire/firestore';
+import { 
+  Firestore, 
+  collection, 
+  addDoc, 
+  collectionData, 
+  doc, 
+  updateDoc, 
+  query, 
+  orderBy, 
+  where, 
+  limit, 
+  getDocs, 
+  DocumentReference 
+} from '@angular/fire/firestore';
 import { Observable } from 'rxjs';
 
+// Interface que define a estrutura da senha
 export interface Senha {
   id?: string;
   codigo: string;
   tipo: 'normal' | 'preferencial';
   status: 'aguardando' | 'chamada' | 'atendida';
   hora: string;
+  timestamp: number;
+  guiche?: number;
 }
 
 @Injectable({ providedIn: 'root' })
 export class SenhaService {
-  private senhasRef;
+  private readonly collectionName = 'senhas';
 
-  constructor(private firestore: Firestore) {
-    this.senhasRef = collection(this.firestore, 'senhas');
-  }
+  constructor(private firestore: Firestore) {}
 
-  // Gera uma nova senha e retorna ela com ID
   async gerarSenha(tipo: 'normal' | 'preferencial'): Promise<Senha> {
+    const senhasRef = collection(this.firestore, this.collectionName);
     const prefixo = tipo === 'preferencial' ? 'P' : 'N';
     const codigo = prefixo + Math.floor(Math.random() * 1000).toString().padStart(3, '0');
-    const hora = new Date().toLocaleTimeString();
+    
+    const hora = new Date().toLocaleTimeString('pt-BR');
+    const currentTimestamp = Date.now();
 
-    const docRef: DocumentReference = await addDoc(this.senhasRef, { tipo, codigo, status: 'aguardando', hora });
-
-    return {
-      id: docRef.id,
-      codigo,
+    const newSenha: Senha = {
       tipo,
+      codigo,
       status: 'aguardando',
-      hora
+      hora,
+      timestamp: currentTimestamp
     };
+
+    const docRef: DocumentReference = await addDoc(senhasRef, newSenha);
+    return { ...newSenha, id: docRef.id };
   }
 
-  // Lista senhas que estão aguardando
   listarSenhasAguardando(): Observable<Senha[]> {
-    const q = query(this.senhasRef, where('status', '==', 'aguardando'), orderBy('hora'));
-    return collectionData(q, { idField: 'id' }) as Observable<Senha[]>;
-  }
-
-  // Lista senhas que foram chamadas
-  listarSenhasChamadas(): Observable<Senha[]> {
-    const q = query(this.senhasRef, where('status', '==', 'chamada'), orderBy('hora'));
-    return collectionData(q, { idField: 'id' }) as Observable<Senha[]>;
-  }
-
-  // 🆕 MÉTODO ADICIONADO: Lista as últimas senhas chamadas (para o Painel de TV)
-  listarUltimasChamadas(limite: number = 5): Observable<Senha[]> {
-    // Ordena pela hora de forma descendente ('desc') para que a mais recente venha primeiro
+    const senhasRef = collection(this.firestore, this.collectionName);
     const q = query(
-        this.senhasRef,
-        where('status', '==', 'chamada'),
-        orderBy('hora', 'desc'),
-        limit(limite)
+      senhasRef,
+      where('status', '==', 'aguardando'),
+      orderBy('timestamp', 'asc')
     );
     return collectionData(q, { idField: 'id' }) as Observable<Senha[]>;
   }
 
-  // Pega a próxima senha a ser chamada
+  listarUltimasChamadas(limite: number = 5): Observable<Senha[]> {
+    const senhasRef = collection(this.firestore, this.collectionName);
+    const q = query(
+      senhasRef,
+      where('status', '==', 'chamada'),
+      orderBy('timestamp', 'desc'),
+      limit(limite)
+    );
+    return collectionData(q, { idField: 'id' }) as Observable<Senha[]>;
+  }
+
   async proximaSenha(): Promise<Senha | null> {
-    const q = query(this.senhasRef, where('status', '==', 'aguardando'), orderBy('hora'), limit(1));
+    const senhasRef = collection(this.firestore, this.collectionName);
+    const q = query(
+      senhasRef,
+      where('status', '==', 'aguardando'),
+      orderBy('timestamp', 'asc'),
+      limit(1)
+    );
     const snapshot = await getDocs(q);
 
     if (snapshot.empty) return null;
 
-    const docData = snapshot.docs[0].data() as Senha;
-    const docId = snapshot.docs[0].id;
-
-    return { ...docData, id: docId };
+    const docSnapshot = snapshot.docs[0];
+    const docData = docSnapshot.data() as Senha;
+    
+    return { ...docData, id: docSnapshot.id };
   }
 
-  // Atualiza status da senha
-  async atualizarStatus(senhaId: string, status: 'chamada' | 'atendida') {
-    const senhaDoc = doc(this.firestore, `senhas/${senhaId}`);
-    await updateDoc(senhaDoc, { status });
+  async atualizarStatus(
+    senhaId: string,
+    status: 'chamada' | 'atendida',
+    guiche?: number
+  ): Promise<void> {
+    const senhaDoc = doc(this.firestore, this.collectionName, senhaId);
+    const updateData: Partial<Senha> = { status };
+
+    if (status === 'chamada') {
+      updateData.timestamp = Date.now();
+      if (guiche !== undefined) {
+        updateData.guiche = Number(guiche);
+      } else {
+        console.warn(`Senha ${senhaId} marcada como 'chamada' sem guichê definido.`);
+      }
+    }
+
+    await updateDoc(senhaDoc, updateData);
   }
 }

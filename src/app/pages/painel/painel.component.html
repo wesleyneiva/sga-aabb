@@ -1,20 +1,69 @@
-<h2>Painel de Chamadas</h2>
+<div class="container-fluid bg-light min-vh-100 py-5">
+  <!-- Header -->
+  <div class="text-center mb-5">
+    <h1 class="display-3 fw-bold text-primary">Painel de Atendimento</h1>
+    <p class="fs-4 text-secondary">Últimas senhas chamadas</p>
+  </div>
 
-<table>
-  <thead>
-    <tr>
-      <th>Senha</th>
-      <th>Tipo</th>
-      <th>Guichê</th>
-      <th>Hora</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr *ngFor="let s of senhas">
-      <td>{{ s.numero }}</td>
-      <td>{{ s.tipo }}</td>
-      <td>{{ s.guiche || '-' }}</td>
-      <td>{{ s.createdAt?.toDate() | date:'HH:mm:ss' }}</td>
-    </tr>
-  </tbody>
-</table>
+  <div class="row g-4">
+    <!-- Destaque principal -->
+    <div class="col-lg-8">
+      <div *ngIf="ultimaChamada$ | async as ultima; else aguardando" class="ultima-senha shadow-lg">
+        <h2 class="text-center text-primary mb-4">SENHA CHAMADA</h2>
+        <span class="codigo-senha">{{ ultima.codigo }}</span>
+
+        <div class="mt-4 d-flex justify-content-center align-items-center gap-4">
+          <div class="text-center">
+            <p class="mb-1">DIRIJA-SE AO</p>
+          </div>
+          <div class="text-center bg-warning rounded px-4 py-2 shadow">
+            <p class="mb-0 fw-bold">GUICHÊ {{ ultima.guiche || '...' }}</p>
+          </div>
+        </div>
+      </div>
+
+
+      <ng-template #aguardando>
+        <div class="card bg-info bg-opacity-10 text-center p-5 shadow-sm">
+          <div class="card-body">
+            <div class="spinner-border text-primary mb-4" style="width: 4rem; height: 4rem;" role="status"></div>
+            <h4 class="text-primary">Aguardando a primeira chamada...</h4>
+          </div>
+        </div>
+      </ng-template>
+    </div>
+
+    <!-- Histórico -->
+    <div class="col-lg-4">
+      <div class="card shadow-sm h-100 border-0">
+        <div class="card-header bg-primary text-white text-center fs-5 fw-bold">
+          Histórico Recente
+        </div>
+
+        <ul *ngIf="historicoChamadas$ | async as historico; else loading" class="list-group list-group-flush">
+          <li *ngFor="let senha of historico; trackBy: trackBySenhaId"
+            class="list-group-item d-flex justify-content-between align-items-center bg-white border-0 border-bottom">
+            <div>
+              <span class="fw-bold fs-6" [class.text-warning]="senha.tipo === 'preferencial'"
+                [class.text-primary]="senha.tipo === 'normal'">
+                {{ senha.codigo }}
+              </span>
+              <small class="text-secondary d-block">{{ senha.tipo | titlecase }}</small>
+            </div>
+            <span class="badge bg-warning text-dark fs-6">Guichê {{ senha.guiche }}</span>
+          </li>
+          <li *ngIf="historico.length === 0" class="list-group-item text-center bg-white text-secondary">
+            Nenhuma senha chamada ainda.
+          </li>
+        </ul>
+
+        <ng-template #loading>
+          <div class="card-body text-center py-5">
+            <div class="spinner-border text-primary" role="status"></div>
+            <p class="mt-3 text-secondary">Carregando histórico...</p>
+          </div>
+        </ng-template>
+      </div>
+    </div>
+  </div>
+</div>

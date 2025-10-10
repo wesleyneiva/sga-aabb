@@ -1,0 +1,52 @@
+$primary-color: #0d6efd;
+$secondary-color: #6c757d;
+$yellow-color: #ffc107;
+$yellow-light: #ffeb3b;
+$white-color: #ffffff;
+$black-color: #000000;
+
+:host {
+  font-family: 'Inter', 'Segoe UI', sans-serif;
+
+  .card {
+    border-radius: 1rem;
+    transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
+
+    &:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 0.5rem 1.5rem rgba(0, 0, 0, 0.15);
+    }
+  }
+
+  .ultima-senha {
+    background-color: $white-color;
+    border-radius: 1.5rem;
+    padding: 4rem 2rem;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+
+    span.codigo-senha {
+      font-family: 'OCR A Std', 'Courier New', monospace;
+      font-weight: bold;
+      font-size: 12rem;
+      color: $black-color;
+      letter-spacing: 0.2rem;
+    }
+  }
+
+  .badge {
+    font-size: 1.5rem;
+  }
+
+  .list-group-item {
+    border-radius: 0.5rem;
+    margin-bottom: 0.25rem;
+  }
+
+  .spinner-border {
+    width: 3rem;
+    height: 3rem;
+  }
+}
