@@ -1,0 +1,16 @@
+<h2>Painel do Atendente</h2>
+
+<select [(ngModel)]="tipoSelecionado">
+  <option value="Financeiro">Financeiro</option>
+  <option value="Suporte">Suporte</option>
+  <option value="Cadastro">Cadastro</option>
+</select>
+
+<input type="number" [(ngModel)]="guiche" placeholder="Guichê" />
+
+<button (click)="chamar()">Chamar próxima</button>
+
+<div *ngIf="senhaAtual">
+  <h3>Senha chamada: {{ senhaAtual.numero }}</h3>
+  <p>Guichê: {{ senhaAtual.guiche }}</p>
+</div>

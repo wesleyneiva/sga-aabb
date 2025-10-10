@@ -1,0 +1,20 @@
+<h2>Painel de Chamadas</h2>
+
+<table>
+  <thead>
+    <tr>
+      <th>Senha</th>
+      <th>Tipo</th>
+      <th>Guichê</th>
+      <th>Hora</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr *ngFor="let s of senhas">
+      <td>{{ s.numero }}</td>
+      <td>{{ s.tipo }}</td>
+      <td>{{ s.guiche || '-' }}</td>
+      <td>{{ s.createdAt?.toDate() | date:'HH:mm:ss' }}</td>
+    </tr>
+  </tbody>
+</table>

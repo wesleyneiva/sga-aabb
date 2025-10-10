@@ -1,0 +1,11 @@
+<div class="container">
+  <h2>Selecione o tipo de atendimento</h2>
+  <button (click)="gerar('Financeiro')">Financeiro</button>
+  <button (click)="gerar('Suporte')">Suporte</button>
+  <button (click)="gerar('Cadastro')">Cadastro</button>
+
+  <div *ngIf="ultimaSenha" class="senha-gerada">
+    <h3>Sua senha:</h3>
+    <span>{{ ultimaSenha.numero }}</span>
+  </div>
+</div>
