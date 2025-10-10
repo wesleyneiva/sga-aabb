@@ -1,11 +1,11 @@
 {
   "hosting": {
-    "public": "dist/sga-aabb",
+    "public": "dist/sga-aabb/browser",
     "ignore": ["firebase.json", "**/.*", "**/node_modules/**"],
     "rewrites": [
       {
         "source": "**",
-        "destination": "/browser/index.html"
+        "destination": "/index.html"
       }
     ]
   }
